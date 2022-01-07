@@ -104,7 +104,7 @@ class WeatherView: View {
             bottomStack.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             bottomStack.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             bottomStack.topAnchor.constraint(equalTo: self.centerYAnchor),
-            conditionButton.heightAnchor.constraint(equalToConstant: 70),
+            conditionButton.heightAnchor.constraint(equalToConstant: 75),
             conditionButton.widthAnchor.constraint(equalToConstant: 90),
         ])
     }
@@ -113,17 +113,19 @@ class WeatherView: View {
         cityLabel.text = weather.cityName.uppercased()
         tempLabel.text = weather.temperatureString
         conditionButton.setImage(UIImage(systemName: weather.conditionName), for: .normal)
-        topStack.backgroundColor = UIColor(named: weather.temperatureColor)
+        topStack.backgroundColor = .clear
         bottomStack.backgroundColor = UIColor(named: weather.temperatureColor)
         tableView.backgroundColor = UIColor(named: weather.temperatureColor)
         tableView.backgroundView?.backgroundColor = UIColor(named: weather.temperatureColor)
+        
         backgroundColor = UIColor(named: weather.temperatureColor)
-        startAnimation(with: weather)
+        emitterLayer.emitterCells?.removeAll()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) { [weak self] in
+            self?.startAnimation(with: weather)
+        }
     }
     
     func startAnimation(with weather: WeatherModel) {
-        
-        emitterLayer.emitterCells?.removeAll()
         
         switch weather.conditionName {
         case "cloud.drizzle":
@@ -141,26 +143,7 @@ class WeatherView: View {
         }
     }
 
-    func makeEmitterSnowCell() -> CAEmitterCell {
-        let cell = CAEmitterCell()
-        cell.contentsScale = 5.5
-        cell.birthRate = 70
-        cell.lifetime = 10.0
-        cell.lifetimeRange = 2
-        cell.color = UIColor.white.cgColor
-        cell.alphaRange = 3.2
-        cell.velocity = 100
-        cell.velocityRange = 150
-        cell.emissionLongitude = CGFloat.pi / 2
-        cell.yAcceleration = 10
-        cell.emissionRange = CGFloat.pi / 2
-        cell.spin = 2
-        cell.spinRange = 3
-        cell.scaleRange = 0.5
-        cell.scaleSpeed = -0.05
-        cell.contents = UIImage(named: "spark")?.cgImage
-        return cell
-    }
+    //MARK: - Rain Handling
     
     func makeEmitterRainCell(birthrate: Float) -> CAEmitterCell {
         let cell = CAEmitterCell()
@@ -190,11 +173,63 @@ class WeatherView: View {
         }
         let rain = makeEmitterRainCell(birthrate: Float(birthrate))
         emitterLayer.emitterCells = [rain]
+        emitterLayer.zPosition = 0
         self.layer.addSublayer(emitterLayer)
     }
     
+    //MARK: - Sun Handling
+    
     func startShining() {
+        emitterLayer.emitterPosition = CGPoint(x: frame.minX, y: frame.minY + 50)
+        emitterLayer.emitterShape = .point
+        emitterLayer.emitterSize = CGSize(width: 80, height: 80)
         
+        let sun = makeEmitterSunCell()
+        emitterLayer.emitterCells = [sun]
+        emitterLayer.zPosition = -1
+        self.layer.addSublayer(emitterLayer)
+    }
+    
+    func makeEmitterSunCell() -> CAEmitterCell {
+        let cell = CAEmitterCell()
+        cell.scale = 2
+        cell.birthRate = 25
+        cell.lifetime = 5
+        cell.scaleRange = 1
+        cell.scaleSpeed = 1.5
+        cell.color = UIColor(red: 0.96, green: 0.80, blue: 0.47, alpha: 1.0).cgColor
+        cell.alphaRange = 0.2
+        cell.velocity = 0.09
+        cell.yAcceleration = 0
+        cell.xAcceleration = 0
+        cell.spin = 2
+        cell.spinRange = 5
+        
+        cell.contents = UIImage(named: "spark")?.cgImage
+        return cell
+    }
+    
+    //MARK: - Snow Handling
+    
+    func makeEmitterSnowCell() -> CAEmitterCell {
+        let cell = CAEmitterCell()
+        cell.contentsScale = 5.5
+        cell.birthRate = 70
+        cell.lifetime = 10.0
+        cell.lifetimeRange = 2
+        cell.color = UIColor.white.cgColor
+        cell.alphaRange = 3.2
+        cell.velocity = 100
+        cell.velocityRange = 150
+        cell.emissionLongitude = CGFloat.pi / 2
+        cell.yAcceleration = 10
+        cell.emissionRange = CGFloat.pi / 2
+        cell.spin = 2
+        cell.spinRange = 3
+        cell.scaleRange = 0.5
+        cell.scaleSpeed = -0.05
+        cell.contents = UIImage(named: "spark")?.cgImage
+        return cell
     }
     
     func startSnowing() {
@@ -203,6 +238,7 @@ class WeatherView: View {
         emitterLayer.emitterSize = CGSize(width: frame.size.width, height: 10)
         let snow = makeEmitterSnowCell()
         emitterLayer.emitterCells = [snow]
+        emitterLayer.zPosition = 0
         self.layer.addSublayer(emitterLayer)
     }
     

@@ -6,7 +6,6 @@
 //
 
 import UIKit
-// api key: 8e05c03e6b279457f114b23b0c3b3ccb
 
 struct WeatherModel {
     
