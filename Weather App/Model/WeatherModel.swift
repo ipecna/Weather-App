@@ -23,7 +23,6 @@ struct WeatherModel {
         return String(format: "%.0fCº", temperature)
     }
 
-    
     var feelsLikeString: String {
         return String(format: "%.0fCº", feelsLike)
     }
@@ -32,6 +31,7 @@ struct WeatherModel {
         return String(format: "%.0f meters/sec", wind)
     }
     
+    // this property helps return an SFSymbol to fill the image in WeatherView
     var conditionName: String {
         switch conditionID {
         case 200...232:
@@ -51,6 +51,7 @@ struct WeatherModel {
         }
     }
     
+    // a range of temperatures to show proper background colors
     var temperatureColor: String {
         switch temperature {
         case ...(-11.0) :
@@ -70,16 +71,18 @@ struct WeatherModel {
         }
     }
     
+    //these two format UNIX date to normal date
     var sunsetString: String {
         let date = NSDate(timeIntervalSince1970: Double(sunset))
         let components = Calendar.current.dateComponents([.hour, .minute], from: date as Date)
         let newDate = Calendar.current.date(from: components)?.toString(withFormat: "HH:mm")
-        return newDate!
+        return newDate ?? "no data"
     }
+    
     var sunriseString: String {
         let date = NSDate(timeIntervalSince1970: Double(sunrise))
         let components = Calendar.current.dateComponents([.hour, .minute], from: date as Date)
         let newDate = Calendar.current.date(from: components)?.toString(withFormat: "HH:mm")
-        return newDate!
+        return newDate ?? "no data"
     }
 }

@@ -8,15 +8,12 @@
 import Foundation
 
 struct WeatherData: Codable {
-//    let cod: String
-//    let message, cnt: Int
     let list: [List]
     let city: City
 }
 
 // MARK: - City
 struct City: Codable {
-    //let id: Int
     let name: String
     let coord: Coord
     let country: String
@@ -36,13 +33,11 @@ struct List: Codable {
     let clouds: Clouds
     let wind: Wind
     let visibility: Int
-    let pop: Double
     let snow: Snow?
-    let sys: Sys
     let dtTxt: String
 
     enum CodingKeys: String, CodingKey {
-        case dt, main, weather, clouds, wind, visibility, pop, snow, sys
+        case dt, main, weather, clouds, wind, visibility, snow
         case dtTxt = "dt_txt"
     }
 }
@@ -80,34 +75,13 @@ struct Snow: Codable {
     }
 }
 
-// MARK: - Sys
-struct Sys: Codable {
-    let pod: Pod
-}
-
-enum Pod: String, Codable {
-    case d = "d"
-    case n = "n"
-}
-
 // MARK: - WeatherElement
 struct WeatherElement: Codable {
     let id: Int
-    //let main: MainEnum
-    //let weatherDescription: Description
-    //let icon: Icon
 
     enum CodingKeys: String, CodingKey {
         case id
-        //case weatherDescription = "description"
-        //case icon
     }
-}
-
-enum MainEnum: String, Codable {
-    case clouds = "Clouds"
-    case snow = "Snow"
-    case clear = "Clear"
 }
 
 // MARK: - Wind

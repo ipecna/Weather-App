@@ -20,8 +20,6 @@ struct WeatherTableModel {
         let date = day.toDate()
         let components = Calendar.current.dateComponents([.year, .month, .day], from: date!)
         let newDate = Calendar.current.date(from: components)?.toString()
-        return newDate!
+        return newDate ?? "no data"
     }
-    
-    
 }

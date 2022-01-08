@@ -17,12 +17,14 @@ class WeatherManager {
     var persistedWeather: NSManagedObject?
     var container = (UIApplication.shared.delegate as! AppDelegate).persistentContainer
     
+    // method to upload weather from the searchBar
     func fetchWeather(cityName: String) {
         let urlString = "\(weatherFiveDaysURL)&q=\(cityName)"
         print(urlString)
         performRequest(with: urlString)
     }
     
+    // method to upload location-based weather upon loading the app
     func fetchWeather(latitude: CLLocationDegrees, longitude: CLLocationDegrees) {
         let lat = String(format: "%.2f", latitude)
         let lon = String(format: "%.2f", longitude)
@@ -36,11 +38,13 @@ class WeatherManager {
             let task = session.dataTask(with: url) { data, response, error in
                 if error == nil {
                     if let safeData = data {
+                        // weather for the main View
                         if let weather = self.parseJSON(safeData) {
                             DispatchQueue.main.async {
                                 self.delegate?.didUpdateWeather(self, weather: weather)
                             }
                         }
+                        // table view weather
                         if let weather5Days = self.parseJSONFor5Days(safeData) {
                             DispatchQueue.main.async {
                                 self.delegate?.didUpdateWeatherTable(self, weather: weather5Days)
@@ -48,6 +52,7 @@ class WeatherManager {
                         }
                     }
                 } else {
+                    // calls an alert which allows to load again
                     DispatchQueue.main.async { [weak self] in
                         self?.delegate?.didFailWithError(error: error!)
                     }
@@ -58,6 +63,7 @@ class WeatherManager {
         }
     }
     
+    // fill the model with data and save to CoreData
     func parseJSON(_ weatherData: Data) -> WeatherModel? {
         let decoder = JSONDecoder()
         do {
@@ -73,7 +79,17 @@ class WeatherManager {
             let feelsLike = decodedData.list[0].main.feelsLike
             let humidity = decodedData.list[0].main.humidity
             
-            let weather = WeatherModel(temperature: temp, cityName: city, conditionID: cond, sunrise: sunrise, sunset: sunset, feelsLike: feelsLike, wind: wind, humidity: humidity, population: population)
+            let weather = WeatherModel(temperature: temp,
+                                       cityName: city,
+                                       conditionID: cond,
+                                       sunrise: sunrise,
+                                       sunset: sunset,
+                                       feelsLike: feelsLike,
+                                       wind: wind,
+                                       humidity: humidity,
+                                       population: population)
+            
+            //core data save
             save(weather: weather)
             
             return weather
@@ -86,6 +102,7 @@ class WeatherManager {
         }
     }
     
+    // fill weatherTableDataSource with data
     func parseJSONFor5Days(_ weatherData: Data) -> [WeatherTableModel]? {
         let decoder = JSONDecoder()
         do {
@@ -100,8 +117,8 @@ class WeatherManager {
                 if !(calendar.isDate(i.dtTxt.toDate()!, inSameDayAs: currentDate)) {
                     let temp = i.main.temp
                     let day = i.dtTxt
+                    
                     let weather = WeatherTableModel(temperature: temp, day: day)
-                    print(weather)
                     weather5Days.append(weather)
                     currentDate = i.dtTxt.toDate()!
                 }
@@ -113,11 +130,11 @@ class WeatherManager {
             DispatchQueue.main.async { [weak self] in
                 self?.delegate?.didFailWithError(error: error)
             }
-            print(error)
             return nil
         }
     }
     
+    //get data from CoreData
     func fetchPersistedWeather() {
         let context = container.viewContext
         let fetchData = NSFetchRequest<NSFetchRequestResult>(entityName: "PersistedWeatherModel")
@@ -125,10 +142,12 @@ class WeatherManager {
         do {
             persistedWeather = try context.fetch(fetchData)[0] as? NSManagedObject
         } catch {
+            //TO DO: Handle appropriately
             print("Unable to fetch data")
         }
         
         guard let persistedWeather = persistedWeather else {
+            //TO DO: Handle appropriately
             fatalError("There is no persisted weather")
         }
         
@@ -142,13 +161,20 @@ class WeatherManager {
         let humidity = persistedWeather.value(forKey: "humidity")
         let population = persistedWeather.value(forKey: "population")
         
-        let weather = WeatherModel(temperature: temperature as! Double, cityName: cityName as! String, conditionID: conditionID as! Int, sunrise: sunrise as! Int, sunset: sunset as! Int, feelsLike: feelsLike as! Double, wind: wind as! Double, humidity: humidity as! Int, population: population as! Int)
-        print(weather)
+        let weather = WeatherModel(temperature: temperature as! Double,
+                                   cityName: cityName as! String,
+                                   conditionID: conditionID as! Int,
+                                   sunrise: sunrise as! Int,
+                                   sunset: sunset as! Int,
+                                   feelsLike: feelsLike as! Double,
+                                   wind: wind as! Double,
+                                   humidity: humidity as! Int,
+                                   population: population as! Int)
         
         delegate?.didFetchPersistedData(self, weather: weather)
     }
     
-    
+    // save to CoreData
     func save(weather: WeatherModel) {
     
         let managedContext = container.viewContext
@@ -163,12 +189,13 @@ class WeatherManager {
             if let item = try managedContext.fetch(fetchData)[0] as? NSManagedObject {
                 managedContext.delete(item)
                 try managedContext.save()
-                print("Deleted data")
             }
         } catch {
+            //TO DO: Handle appropriately
             print("Unable to fetch data")
         }
-    
+        
+        // fill new entity
         let object = NSManagedObject(entity: entity,
                                      insertInto: managedContext)
         
@@ -182,13 +209,10 @@ class WeatherManager {
         object.setValue(Int64(weather.conditionID), forKeyPath: "conditionID")
         object.setValue(weather.temperature, forKeyPath: "temperature")
         
-        
-        
         // append new entity
         do {
             try managedContext.save()
             persistedWeather = object
-            //print(persistedWeather)
         } catch let error as NSError {
             print("Could not save. \(error), \(error.userInfo)")
         }

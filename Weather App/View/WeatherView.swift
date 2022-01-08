@@ -47,17 +47,28 @@ class WeatherView: View {
     
     lazy var conditionButton: UIButton = {
         var button = UIButton()
-        button.setImage(UIImage(systemName: "globe.europe.africa"), for: .normal)
+        let config = UIImage.SymbolConfiguration(textStyle: .largeTitle, scale: .large)
+        button.setImage(UIImage(systemName: "globe.europe.africa")?.withConfiguration(config), for: .normal)
+        button.imageView?.tintColor = .white
+        button.imageView?.contentMode = .scaleAspectFill
+        button.contentMode = .scaleAspectFill
+        button.addTarget(self, action: #selector(goToDetail), for: .touchUpInside)
+        return button
+    }()
+    
+    lazy var detailsButton: UIButton = {
+        var button = UIButton()
+        button.setTitle("more", for: .normal)
         button.translatesAutoresizingMaskIntoConstraints = false
-        button.contentVerticalAlignment = .fill
-        button.contentHorizontalAlignment = .fill
+        button.configuration = .gray()
+        button.setTitleColor(.white, for: .normal)
         button.addTarget(self, action: #selector(goToDetail), for: .touchUpInside)
         return button
     }()
 
     
     lazy var topStack: UIStackView = {
-        let stack = UIStackView(arrangedSubviews: [cityLabel, tempLabel, conditionButton])
+        let stack = UIStackView(arrangedSubviews: [cityLabel, tempLabel, conditionButton, detailsButton])
         stack.distribution = .equalCentering
         stack.axis = .vertical
         stack.alignment = .center
@@ -96,23 +107,23 @@ class WeatherView: View {
         bottomStack.translatesAutoresizingMaskIntoConstraints = false
         
         NSLayoutConstraint.activate([
-            topStack.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 70),
+            topStack.topAnchor.constraint(equalTo: self.safeAreaLayoutGuide.topAnchor, constant: 30),
             topStack.leadingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.leadingAnchor),
             topStack.trailingAnchor.constraint(equalTo: self.safeAreaLayoutGuide.trailingAnchor),
-            topStack.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.centerYAnchor, constant: -100),
+            topStack.bottomAnchor.constraint(equalTo: self.safeAreaLayoutGuide.centerYAnchor, constant: -80),
             bottomStack.bottomAnchor.constraint(equalTo: self.bottomAnchor),
             bottomStack.leadingAnchor.constraint(equalTo: self.leadingAnchor),
             bottomStack.trailingAnchor.constraint(equalTo: self.trailingAnchor),
             bottomStack.topAnchor.constraint(equalTo: self.centerYAnchor),
-            conditionButton.heightAnchor.constraint(equalToConstant: 75),
-            conditionButton.widthAnchor.constraint(equalToConstant: 90),
         ])
     }
     
     func updateWeather(with weather: WeatherModel) {
         cityLabel.text = weather.cityName.uppercased()
         tempLabel.text = weather.temperatureString
-        conditionButton.setImage(UIImage(systemName: weather.conditionName), for: .normal)
+        let config = UIImage.SymbolConfiguration(textStyle: .largeTitle, scale: .large)
+        conditionButton.setImage(UIImage(systemName: weather.conditionName)?.withConfiguration(config), for: .normal)
+        
         topStack.backgroundColor = .clear
         bottomStack.backgroundColor = UIColor(named: weather.temperatureColor)
         tableView.backgroundColor = UIColor(named: weather.temperatureColor)
@@ -197,7 +208,7 @@ class WeatherView: View {
         cell.lifetime = 5
         cell.scaleRange = 1
         cell.scaleSpeed = 1.5
-        cell.color = UIColor(red: 0.96, green: 0.80, blue: 0.47, alpha: 1.0).cgColor
+        cell.color = UIColor(red: 0.97, green: 0.62, blue: 0.12, alpha: 1.00).cgColor
         cell.alphaRange = 0.2
         cell.velocity = 0.09
         cell.yAcceleration = 0
