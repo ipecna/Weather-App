@@ -21,8 +21,9 @@ class WeatherView: View {
     lazy var searchBar: UISearchBar = {
         let bar = UISearchBar()
         bar.showsCancelButton = true
-        bar.tintColor = .black
-        bar.searchTextField.textColor = .black
+        bar.tintColor = .white
+        bar.barTintColor = .white
+        bar.searchTextField.textColor = .white
         bar.searchBarStyle = .default
         bar.delegate = self
         return bar
